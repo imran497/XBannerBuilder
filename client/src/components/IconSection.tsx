@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, Search, Heart, Star, Zap, Home, User, Mail, Phone, Camera, Music, Video } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 const ICONS = [
   { Icon: Heart, name: "Heart" },
@@ -18,12 +19,55 @@ const ICONS = [
   { Icon: Video, name: "Video" }
 ];
 
-export default function IconSection() {
+interface IconSectionProps {
+  onAddIcon?: (svgString: string) => void;
+  onAddImage?: (imageUrl: string) => void;
+}
+
+export default function IconSection({ onAddIcon, onAddImage }: IconSectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredIcons = ICONS.filter(icon =>
     icon.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleIconClick = (IconComponent: React.ComponentType<{ className?: string }>) => {
+    const svgElement = renderToStaticMarkup(
+      <IconComponent />
+    );
+    
+    const cleanSvg = svgElement
+      .replace(/<svg[^>]*>/, (match) => {
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+      })
+      .replace(/\s*class="[^"]*"/g, '')
+      .replace(/\s*data-[^=]*="[^"]*"/g, '')
+      .trim();
+    
+    onAddIcon?.(cleanSvg);
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string;
+      onAddImage?.(imageUrl);
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <Accordion type="single" collapsible>
@@ -34,10 +78,19 @@ export default function IconSection() {
         <AccordionContent className="px-4 pb-4 space-y-4">
           <div>
             <Label className="text-sm font-medium mb-2 block">Upload Image</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+              data-testid="input-file-upload"
+            />
             <Button
               variant="outline"
               className="w-full border-dashed h-24 flex flex-col gap-2"
               data-testid="button-upload-image"
+              onClick={handleUploadClick}
             >
               <Upload className="w-6 h-6" />
               <span className="text-sm">Click to upload or drag and drop</span>
@@ -63,6 +116,7 @@ export default function IconSection() {
                   data-testid={`button-icon-${name.toLowerCase()}`}
                   className="aspect-square flex items-center justify-center rounded-md border hover-elevate active-elevate-2"
                   title={name}
+                  onClick={() => handleIconClick(Icon)}
                 >
                   <Icon className="w-5 h-5" />
                 </button>
