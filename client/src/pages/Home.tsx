@@ -7,12 +7,13 @@ import IconSection from "@/components/IconSection";
 import GitHubSection from "@/components/GitHubSection";
 import ExportSection from "@/components/ExportSection";
 import TwitterProfilePreview from "@/components/TwitterProfilePreview";
-import { CanvasHandle, TextProperties } from "@/components/BannerCanvas";
+import BannerCanvas, { CanvasHandle, TextProperties } from "@/components/BannerCanvas";
 import { FabricObject, IText } from "fabric";
 
 export default function Home() {
   const [background, setBackground] = useState("#ffffff");
   const [showSafeZone, setShowSafeZone] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
   const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
   const canvasRef = useRef<CanvasHandle>(null);
 
@@ -93,20 +94,30 @@ export default function Home() {
             <ExportSection
               showSafeZone={showSafeZone}
               onSafeZoneToggle={setShowSafeZone}
+              previewMode={previewMode}
+              onPreviewModeToggle={setPreviewMode}
               onExport={handleExport}
             />
           </div>
         </ScrollArea>
       </div>
 
-      <TwitterProfilePreview
-        ref={canvasRef}
-        background={background}
-        showSafeZone={showSafeZone}
-        onSelectionChange={handleSelectionChange}
-        onAddIcon={handleAddIcon}
-        onAddImage={handleAddImage}
-      />
+      {previewMode ? (
+        <TwitterProfilePreview
+          ref={canvasRef}
+          background={background}
+          showSafeZone={showSafeZone}
+          onSelectionChange={handleSelectionChange}
+        />
+      ) : (
+        <BannerCanvas
+          ref={canvasRef}
+          background={background}
+          showSafeZone={showSafeZone}
+          onSelectionChange={handleSelectionChange}
+          onExport={handleExport}
+        />
+      )}
     </div>
   );
 }

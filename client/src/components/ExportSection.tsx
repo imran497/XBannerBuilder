@@ -7,10 +7,12 @@ import { Download } from "lucide-react";
 interface ExportSectionProps {
   showSafeZone: boolean;
   onSafeZoneToggle: (show: boolean) => void;
+  previewMode: boolean;
+  onPreviewModeToggle: (preview: boolean) => void;
   onExport: () => void;
 }
 
-export default function ExportSection({ showSafeZone, onSafeZoneToggle, onExport }: ExportSectionProps) {
+export default function ExportSection({ showSafeZone, onSafeZoneToggle, previewMode, onPreviewModeToggle, onExport }: ExportSectionProps) {
   return (
     <Accordion type="single" collapsible defaultValue="export">
       <AccordionItem value="export">
@@ -18,6 +20,18 @@ export default function ExportSection({ showSafeZone, onSafeZoneToggle, onExport
           Export
         </AccordionTrigger>
         <AccordionContent className="px-4 pb-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="preview-mode" className="text-sm font-medium">
+              Preview Mode
+            </Label>
+            <Switch
+              id="preview-mode"
+              checked={previewMode}
+              onCheckedChange={onPreviewModeToggle}
+              data-testid="switch-preview-mode"
+            />
+          </div>
+
           <div className="flex items-center justify-between">
             <Label htmlFor="safe-zone" className="text-sm font-medium">
               Safe Zone Overlay
