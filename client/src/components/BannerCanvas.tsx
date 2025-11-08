@@ -37,6 +37,7 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
   const fabricCanvasRef = useRef<Canvas | null>(null);
   const backgroundRectRef = useRef<Rect | null>(null);
   const safeZoneRectsRef = useRef<Rect[]>([]);
+  const selectedObjectRef = useRef<FabricObject | null>(null);
   const [zoom, setZoom] = useState(1);
   const [canvasZoom, setCanvasZoom] = useState(1);
   const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
@@ -46,10 +47,15 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
     updateSelectedText: (props: Partial<TextProperties>) => {
       if (!fabricCanvasRef.current) return;
       
-      // Use tracked selectedObject instead of getActiveObject to avoid selection loss
-      if (!selectedObject || selectedObject.type !== 'i-text') return;
+      // Use ref-tracked selection first, fallback to Fabric's active object
+      let targetObject = selectedObjectRef.current;
+      if (!targetObject) {
+        targetObject = fabricCanvasRef.current.getActiveObject() || null;
+      }
+      
+      if (!targetObject || targetObject.type !== 'i-text') return;
 
-      const textObject = selectedObject as IText;
+      const textObject = targetObject as IText;
       
       if (props.text !== undefined) textObject.set('text', props.text);
       if (props.fontFamily !== undefined) textObject.set('fontFamily', props.fontFamily);
@@ -127,7 +133,7 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       });
     },
     getCanvas: () => fabricCanvasRef.current,
-  }), [selectedObject]);
+  }));
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -148,10 +154,20 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       height: 500,
       fill: "#ffffff",
       selectable: false,
-      evented: false,
+      evented: true, // Allow it to receive click events
+      hoverCursor: 'default',
     });
     canvas.add(bgRect);
     backgroundRectRef.current = bgRect;
+    
+    // Clear selection when clicking on background
+    canvas.on('mouse:down', (e) => {
+      // If click target is the background rect, clear selection
+      if (e.target === bgRect) {
+        canvas.discardActiveObject();
+        canvas.renderAll();
+      }
+    });
 
     // Add sample text
     const text = new IText("Your Twitter Banner", {
@@ -169,6 +185,7 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
     canvas.on("selection:created", (e) => {
       if (e.selected && e.selected.length > 0) {
         const obj = e.selected[0];
+        selectedObjectRef.current = obj;
         setSelectedObject(obj);
         onSelectionChange?.(obj);
       }
@@ -177,12 +194,14 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
     canvas.on("selection:updated", (e) => {
       if (e.selected && e.selected.length > 0) {
         const obj = e.selected[0];
+        selectedObjectRef.current = obj;
         setSelectedObject(obj);
         onSelectionChange?.(obj);
       }
     });
 
     canvas.on("selection:cleared", () => {
+      selectedObjectRef.current = null;
       setSelectedObject(null);
       onSelectionChange?.(null);
     });
@@ -205,7 +224,13 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
 
     // Keyboard shortcuts
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Delete" || e.key === "Backspace") {
+      // Escape key - deselect active object
+      if (e.key === "Escape") {
+        canvas.discardActiveObject();
+        canvas.renderAll();
+      }
+      // Delete/Backspace - remove active object
+      else if (e.key === "Delete" || e.key === "Backspace") {
         const activeObject = canvas.getActiveObject();
         if (activeObject) {
           canvas.remove(activeObject);
