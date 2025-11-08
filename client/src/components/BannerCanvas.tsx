@@ -25,12 +25,13 @@ export interface CanvasHandle {
 interface BannerCanvasProps {
   background: string;
   showSafeZone: boolean;
+  hideControls?: boolean;
   onExport?: () => void;
   onSelectionChange?: (object: FabricObject | null) => void;
 }
 
 const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
-  function BannerCanvas({ background, showSafeZone, onExport, onSelectionChange }, ref) {
+  function BannerCanvas({ background, showSafeZone, hideControls = false, onExport, onSelectionChange }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<Canvas | null>(null);
   const backgroundRectRef = useRef<Rect | null>(null);
@@ -326,92 +327,115 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center bg-[#1a1a1a] p-8 overflow-auto">
+    <div className={hideControls ? "" : "flex-1 flex flex-col items-center justify-center bg-[#1a1a1a] p-8 overflow-auto"}>
       <div className="relative">
-        <div
-          style={{
-            transform: `scale(${zoom})`,
-            transformOrigin: "center",
-            transition: "transform 0.2s ease",
-          }}
-        >
-          <canvas ref={canvasRef} className="shadow-2xl" />
-          {showSafeZone && (
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute left-[10%] top-[10%] right-[10%] bottom-[10%] border-2 border-dashed border-yellow-400 opacity-50" />
-              <div className="absolute left-[10%] top-[10%] text-xs text-yellow-400 bg-black/50 px-2 py-1 rounded">
-                Safe Zone
+        {!hideControls && (
+          <div
+            style={{
+              transform: `scale(${zoom})`,
+              transformOrigin: "center",
+              transition: "transform 0.2s ease",
+            }}
+          >
+            <canvas ref={canvasRef} className="shadow-2xl" />
+            {showSafeZone && (
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute left-[10%] top-[10%] right-[10%] bottom-[10%] border-2 border-dashed border-yellow-400 opacity-50" />
+                <div className="absolute left-[10%] top-[10%] text-xs text-yellow-400 bg-black/50 px-2 py-1 rounded">
+                  Safe Zone
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 mt-6">
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={handleZoomOut}
-          data-testid="button-zoom-out"
-        >
-          <ZoomOut className="w-4 h-4" />
-        </Button>
-        <span className="text-sm text-white px-3">{Math.round(zoom * 100)}%</span>
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={handleZoomIn}
-          data-testid="button-zoom-in"
-        >
-          <ZoomIn className="w-4 h-4" />
-        </Button>
-        <div className="w-px h-6 bg-white/20 mx-2" />
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={handleAddText}
-          data-testid="button-add-text"
-        >
-          Add Text
-        </Button>
-        {selectedObject && (
-          <>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={handleBringForward}
-              data-testid="button-bring-forward"
-            >
-              Forward
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={handleSendBackward}
-              data-testid="button-send-backward"
-            >
-              Backward
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={handleDeleteSelected}
-              data-testid="button-delete-selected"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </>
+            )}
+          </div>
         )}
-        <div className="w-px h-6 bg-white/20 mx-2" />
-        <Button onClick={handleExport} data-testid="button-export-banner">
-          <Download className="w-4 h-4 mr-2" />
-          Export PNG
-        </Button>
+        {hideControls && (
+          <div className="relative">
+            <canvas ref={canvasRef} />
+            {showSafeZone && (
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Avatar circle safe zone at 96px from left, overlapping bottom */}
+                <div className="absolute border-2 border-dashed border-yellow-400 opacity-50 rounded-full" 
+                     style={{ left: '96px', bottom: '-60px', width: '120px', height: '120px' }} />
+                {/* General safe zones */}
+                <div className="absolute left-[10%] top-[10%] right-[10%] bottom-[10%] border-2 border-dashed border-yellow-400 opacity-30" />
+                <div className="absolute left-[10%] top-[10%] text-xs text-yellow-400 bg-black/50 px-2 py-1 rounded">
+                  Safe Zone
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="text-xs text-white/50 mt-3">
-        1500 × 500 px • {objects.length} object{objects.length !== 1 ? "s" : ""}
-      </div>
+      {!hideControls && (
+        <>
+          <div className="flex items-center gap-2 mt-6">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleZoomOut}
+              data-testid="button-zoom-out"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <span className="text-sm text-white px-3">{Math.round(zoom * 100)}%</span>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleZoomIn}
+              data-testid="button-zoom-in"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+            <div className="w-px h-6 bg-white/20 mx-2" />
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleAddText}
+              data-testid="button-add-text"
+            >
+              Add Text
+            </Button>
+            {selectedObject && (
+              <>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleBringForward}
+                  data-testid="button-bring-forward"
+                >
+                  Forward
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleSendBackward}
+                  data-testid="button-send-backward"
+                >
+                  Backward
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleDeleteSelected}
+                  data-testid="button-delete-selected"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+            <div className="w-px h-6 bg-white/20 mx-2" />
+            <Button onClick={handleExport} data-testid="button-export-banner">
+              <Download className="w-4 h-4 mr-2" />
+              Export PNG
+            </Button>
+          </div>
+
+          <div className="text-xs text-white/50 mt-3">
+            1500 × 500 px • {objects.length} object{objects.length !== 1 ? "s" : ""}
+          </div>
+        </>
+      )}
     </div>
   );
 }

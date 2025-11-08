@@ -6,7 +6,8 @@ import TextSection from "@/components/TextSection";
 import IconSection from "@/components/IconSection";
 import GitHubSection from "@/components/GitHubSection";
 import ExportSection from "@/components/ExportSection";
-import BannerCanvas, { CanvasHandle, TextProperties } from "@/components/BannerCanvas";
+import TwitterProfilePreview from "@/components/TwitterProfilePreview";
+import { CanvasHandle, TextProperties } from "@/components/BannerCanvas";
 import { FabricObject, IText } from "fabric";
 
 export default function Home() {
@@ -47,6 +48,22 @@ export default function Home() {
     canvasRef.current?.addImage(imageUrl);
   };
 
+  const handleExport = () => {
+    const canvas = canvasRef.current?.getCanvas();
+    if (!canvas) return;
+    
+    const dataURL = canvas.toDataURL({
+      format: "png",
+      quality: 1,
+      multiplier: 1,
+    });
+    
+    const link = document.createElement("a");
+    link.download = "twitter-banner.png";
+    link.href = dataURL;
+    link.click();
+  };
+
   return (
     <div className="flex h-screen w-full">
       <div className="w-80 bg-sidebar border-r border-sidebar-border flex flex-col">
@@ -76,17 +93,19 @@ export default function Home() {
             <ExportSection
               showSafeZone={showSafeZone}
               onSafeZoneToggle={setShowSafeZone}
-              onExport={() => console.log("Exporting banner...")}
+              onExport={handleExport}
             />
           </div>
         </ScrollArea>
       </div>
 
-      <BannerCanvas
+      <TwitterProfilePreview
         ref={canvasRef}
         background={background}
         showSafeZone={showSafeZone}
         onSelectionChange={handleSelectionChange}
+        onAddIcon={handleAddIcon}
+        onAddImage={handleAddImage}
       />
     </div>
   );
