@@ -22,7 +22,7 @@ export default function ExportSection({ showSafeZone, onSafeZoneToggle, previewM
         <AccordionContent className="px-4 pb-4 space-y-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="preview-mode" className="text-sm font-medium">
-              Preview Mode
+              Hide Toolbar
             </Label>
             <Switch
               id="preview-mode"
@@ -31,6 +31,10 @@ export default function ExportSection({ showSafeZone, onSafeZoneToggle, previewM
               data-testid="switch-preview-mode"
             />
           </div>
+          
+          <p className="text-xs text-muted-foreground -mt-2">
+            Toggle to hide editing controls and see a clean preview
+          </p>
 
           <div className="flex items-center justify-between">
             <Label htmlFor="safe-zone" className="text-sm font-medium">

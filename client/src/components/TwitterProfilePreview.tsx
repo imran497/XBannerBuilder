@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useEffect } from "react";
 import BannerCanvas, { type CanvasHandle } from "./BannerCanvas";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,13 +8,13 @@ import { FabricObject } from "fabric";
 interface TwitterProfilePreviewProps {
   background: string;
   showSafeZone: boolean;
+  hideControls?: boolean;
   onSelectionChange?: (object: FabricObject | null) => void;
-  onAddIcon?: (svgString: string) => void;
-  onAddImage?: (imageUrl: string) => void;
+  onExport?: () => void;
 }
 
 const TwitterProfilePreview = forwardRef<CanvasHandle, TwitterProfilePreviewProps>(
-  ({ background, showSafeZone, onSelectionChange, onAddIcon, onAddImage }, ref) => {
+  ({ background, showSafeZone, hideControls = false, onSelectionChange, onExport }, ref) => {
     // Static profile data for preview
     const profileData = {
       name: "Your Name",
@@ -25,21 +25,32 @@ const TwitterProfilePreview = forwardRef<CanvasHandle, TwitterProfilePreviewProp
       avatarUrl: "https://github.com/github.png",
     };
 
+    // Apply Fabric zoom instead of CSS transform
+    const canvasZoom = hideControls ? 0.4 : 1.0;
+    const containerWidth = hideControls ? 600 : 1500;
+    const containerHeight = hideControls ? 200 : 500;
+
+    // Apply zoom to Fabric canvas when mode changes
+    useEffect(() => {
+      if (ref && 'current' in ref && ref.current) {
+        ref.current.setCanvasZoom(canvasZoom);
+      }
+    }, [canvasZoom, ref]);
+
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-[#1a1a1a] p-8 overflow-auto">
         {/* Twitter Profile Preview Container */}
-        <div className="relative bg-background rounded-lg overflow-hidden shadow-2xl" style={{ width: '600px' }}>
-          {/* Banner Canvas - Scaled to fit Twitter desktop width */}
-          <div className="relative" style={{ width: '600px', height: '200px', overflow: 'hidden' }}>
-            <div style={{ transform: 'scale(0.4)', transformOrigin: 'top left', width: '1500px', height: '500px' }}>
-              <BannerCanvas
-                ref={ref}
-                background={background}
-                showSafeZone={showSafeZone}
-                hideControls={true}
-                onSelectionChange={onSelectionChange}
-              />
-            </div>
+        <div className="relative bg-background rounded-lg overflow-hidden shadow-2xl" style={{ width: `${containerWidth}px` }}>
+          {/* Banner Canvas - Using Fabric zoom instead of CSS transform */}
+          <div className="relative" style={{ width: `${containerWidth}px`, height: `${containerHeight}px`, overflow: 'hidden' }}>
+            <BannerCanvas
+              ref={ref}
+              background={background}
+              showSafeZone={showSafeZone}
+              hideControls={hideControls}
+              onSelectionChange={onSelectionChange}
+              onExport={onExport}
+            />
           </div>
 
           {/* Profile Information Section */}
@@ -84,13 +95,13 @@ const TwitterProfilePreview = forwardRef<CanvasHandle, TwitterProfilePreviewProp
           </div>
         </div>
 
-        {/* Preview Info */}
+        {/* Mode Info */}
         <div className="mt-4 text-center">
           <Badge variant="secondary" className="text-xs">
-            Twitter Profile Preview (40% scale)
+            {hideControls ? 'Preview Mode (40% zoom)' : 'Editor Mode'}
           </Badge>
           <p className="text-xs text-white/50 mt-2">
-            Actual banner size: 1500 × 500 px
+            Banner size: 1500 × 500 px
           </p>
         </div>
       </div>

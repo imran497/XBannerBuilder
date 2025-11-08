@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
-import { Canvas, IText, FabricObject, Rect, Gradient, FabricImage, loadSVGFromString, util } from "fabric";
+import { Canvas, IText, FabricObject, Rect, Gradient, FabricImage, loadSVGFromString, util, Circle } from "fabric";
 import { Button } from "@/components/ui/button";
 import { Download, ZoomIn, ZoomOut, Trash2 } from "lucide-react";
 
@@ -20,6 +20,7 @@ export interface CanvasHandle {
   addIcon: (svgString: string) => void;
   addImage: (imageUrl: string) => void;
   getCanvas: () => Canvas | null;
+  setCanvasZoom: (zoom: number) => void;
 }
 
 interface BannerCanvasProps {
@@ -35,7 +36,9 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<Canvas | null>(null);
   const backgroundRectRef = useRef<Rect | null>(null);
+  const safeZoneRectsRef = useRef<Rect[]>([]);
   const [zoom, setZoom] = useState(1);
+  const [canvasZoom, setCanvasZoom] = useState(1);
   const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
   const [objects, setObjects] = useState<FabricObject[]>([]);
 
@@ -56,6 +59,12 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       if (props.left !== undefined) textObject.set('left', props.left);
       if (props.top !== undefined) textObject.set('top', props.top);
 
+      fabricCanvasRef.current.renderAll();
+    },
+    setCanvasZoom: (zoomLevel: number) => {
+      if (!fabricCanvasRef.current) return;
+      setCanvasZoom(zoomLevel);
+      fabricCanvasRef.current.setZoom(zoomLevel);
       fabricCanvasRef.current.renderAll();
     },
     addText: (text: string) => {
@@ -264,11 +273,21 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
   }, [background]);
 
   const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 0.1, 2));
+    const newZoom = Math.min(zoom + 0.1, 2);
+    setZoom(newZoom);
+    if (fabricCanvasRef.current) {
+      fabricCanvasRef.current.setZoom(newZoom);
+      fabricCanvasRef.current.renderAll();
+    }
   };
 
   const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 0.1, 0.5));
+    const newZoom = Math.max(zoom - 0.1, 0.5);
+    setZoom(newZoom);
+    if (fabricCanvasRef.current) {
+      fabricCanvasRef.current.setZoom(newZoom);
+      fabricCanvasRef.current.renderAll();
+    }
   };
 
   const handleAddText = useCallback(() => {

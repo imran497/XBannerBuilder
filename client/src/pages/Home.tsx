@@ -102,22 +102,14 @@ export default function Home() {
         </ScrollArea>
       </div>
 
-      {previewMode ? (
-        <TwitterProfilePreview
-          ref={canvasRef}
-          background={background}
-          showSafeZone={showSafeZone}
-          onSelectionChange={handleSelectionChange}
-        />
-      ) : (
-        <BannerCanvas
-          ref={canvasRef}
-          background={background}
-          showSafeZone={showSafeZone}
-          onSelectionChange={handleSelectionChange}
-          onExport={handleExport}
-        />
-      )}
+      <TwitterProfilePreview
+        ref={canvasRef}
+        background={background}
+        showSafeZone={showSafeZone}
+        hideControls={previewMode}
+        onSelectionChange={handleSelectionChange}
+        onExport={handleExport}
+      />
     </div>
   );
 }
