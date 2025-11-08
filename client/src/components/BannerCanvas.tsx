@@ -45,10 +45,11 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
   useImperativeHandle(ref, () => ({
     updateSelectedText: (props: Partial<TextProperties>) => {
       if (!fabricCanvasRef.current) return;
-      const activeObject = fabricCanvasRef.current.getActiveObject();
-      if (!activeObject || activeObject.type !== 'i-text') return;
+      
+      // Use tracked selectedObject instead of getActiveObject to avoid selection loss
+      if (!selectedObject || selectedObject.type !== 'i-text') return;
 
-      const textObject = activeObject as IText;
+      const textObject = selectedObject as IText;
       
       if (props.text !== undefined) textObject.set('text', props.text);
       if (props.fontFamily !== undefined) textObject.set('fontFamily', props.fontFamily);
@@ -59,6 +60,7 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       if (props.left !== undefined) textObject.set('left', props.left);
       if (props.top !== undefined) textObject.set('top', props.top);
 
+      textObject.setCoords();
       fabricCanvasRef.current.renderAll();
     },
     setCanvasZoom: (zoomLevel: number) => {
@@ -125,7 +127,7 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       });
     },
     getCanvas: () => fabricCanvasRef.current,
-  }));
+  }), [selectedObject]);
 
   useEffect(() => {
     if (!canvasRef.current) return;
