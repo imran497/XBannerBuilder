@@ -224,6 +224,12 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
 
     // Keyboard shortcuts
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Skip shortcuts if user is typing in an input/textarea
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+      
       // Escape key - deselect active object
       if (e.key === "Escape") {
         canvas.discardActiveObject();

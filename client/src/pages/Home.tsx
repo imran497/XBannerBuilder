@@ -67,7 +67,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen w-full">
-      <div className="w-80 bg-sidebar border-r border-sidebar-border flex flex-col">
+      <div className="w-80 bg-sidebar border-r border-sidebar-border flex flex-col relative z-10">
         <div className="p-4 border-b border-sidebar-border">
           <h1 className="text-lg font-bold">Twitter Banner Generator</h1>
           <p className="text-xs text-muted-foreground mt-1">
