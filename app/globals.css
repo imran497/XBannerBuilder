@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Roboto:wght@300;400;500;700;900&family=Montserrat:wght@300;400;500;600;700;900&family=Barrio&family=Pirata+One&family=Rye&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode - Clean and bright with blue accents */
+    --background: 213 27% 97%;
+    --foreground: 220 13% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 18%;
+    /* Primary - Twitter blue (rgb(29, 161, 242)) */
+    --primary: 203 89% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 220 13% 18%;
+    --muted: 214 32% 91%;
+    --muted-foreground: 220 13% 46%;
+    --accent: 203 89% 53%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 82%;
+    --input: 214 32% 91%;
+    --ring: 203 89% 53%;
+    --radius: 0.5rem;
+    --button-outline: hsl(var(--border));
+    --primary-border: hsl(var(--primary));
+    --secondary-border: hsl(var(--border));
+    --muted-border: hsl(var(--border));
+    --accent-border: hsl(var(--accent));
+    --destructive-border: hsl(var(--destructive));
+    --chart-1: 203 89% 53%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    /* Level 0: Main background - Deep dark blue-gray (rgb(23, 25, 35)) */
+    --background: 225 21% 11%;
+    --foreground: 213 31% 95%;
+    
+    /* Level 3: Preview cards - Elevated from background */
+    --card: 225 21% 18%;
+    --card-foreground: 213 31% 95%;
+    
+    /* Level 4: Secondary cards/accordions - Between background and card */
+    --secondary: 225 21% 15%;
+    --secondary-foreground: 213 31% 95%;
+    
+    /* Level 6: Form elements - Slightly darker for inputs */
+    --muted: 225 21% 8%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --input: 225 21% 6%;
+    
+    /* Borders - Subtle contrast */
+    --border: 225 21% 25%;
+    
+    /* Primary colors - Twitter blue (rgb(29, 161, 242)) */
+    --primary: 203 89% 53%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Accent colors - Twitter blue theme */
+    --accent: 203 89% 53%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Other elements */
+    --popover: 225 21% 15%;
+    --popover-foreground: 213 31% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --ring: 203 89% 53%;
+    --button-outline: hsl(var(--border));
+    --primary-border: hsl(var(--primary));
+    --secondary-border: hsl(var(--border));
+    --muted-border: hsl(var(--border));
+    --accent-border: hsl(var(--accent));
+    --destructive-border: hsl(var(--destructive));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Ensure all Google Fonts are properly loaded for Fabric.js */
+  .font-inter { font-family: 'Inter', sans-serif; }
+  .font-roboto { font-family: 'Roboto', sans-serif; }
+  .font-montserrat { font-family: 'Montserrat', sans-serif; }
+  .font-barrio { font-family: 'Barrio', cursive; }
+  .font-pirata-one { font-family: 'Pirata One', cursive; }
+  .font-rye { font-family: 'Rye', cursive; }
+}
+
+@layer components {
+  /* Custom scrollbar styling */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+  
+  /* Firefox scrollbar */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) hsl(var(--muted));
+  }
+
+  /* Ensure all buttons have pointer cursor */
+  button, .btn, [role="button"] {
+    @apply cursor-pointer;
+  }
+  
+  .toggle-elevate {
+    @apply transition-all duration-200;
+  }
+  
+  .toggle-elevated {
+    @apply shadow-sm;
+  }
+
+  .hover-elevate {
+    @apply transition-all duration-200 hover:shadow-sm;
+  }
+  
+  .active-elevate-2 {
+    @apply active:shadow-md;
+  }
+  
+  .shadow-xs {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+
+  /* Enhanced card styling for better differentiation */
+  .bg-card {
+    /* Removed box-shadow to prevent gray borders on dark banners */
+  }
+  
+  .bg-secondary {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+}
