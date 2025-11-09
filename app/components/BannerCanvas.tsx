@@ -185,14 +185,14 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       // For font changes, force additional updates
       if (fontChanged) {
         // Clear any cached measurements
-        if (textObject._textLines) {
-          textObject._textLines = undefined;
+        if ((textObject as any)._textLines) {
+          (textObject as any)._textLines = undefined;
         }
-        if (textObject.__lineWidths) {
-          textObject.__lineWidths = undefined;
+        if ((textObject as any).__lineWidths) {
+          (textObject as any).__lineWidths = undefined;
         }
-        if (textObject.__lineHeights) {
-          textObject.__lineHeights = undefined;
+        if ((textObject as any).__lineHeights) {
+          (textObject as any).__lineHeights = undefined;
         }
         
         // Force complete re-initialization for font changes
