@@ -216,7 +216,7 @@ export default function LandingPage() {
                     <div className="text-sm text-muted-foreground">{testimonial.role}</div>
                   </div>
                 </div>
-                <p className="text-muted-foreground italic">"{testimonial.content}"</p>
+                <p className="text-muted-foreground italic">&ldquo;{testimonial.content}&rdquo;</p>
                 
                 {/* Rating stars */}
                 <div className="flex items-center gap-1 mt-4">
