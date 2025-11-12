@@ -58,12 +58,13 @@ export default function InteractiveGrid({ className = '' }: InteractiveGridProps
             onMouseLeave={() => setHoveredSquare(null)}
             onClick={(e) => {
               // Check if click should pass through to elements below
-              const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+              const target = e.target as HTMLElement;
+              const elementBelow = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement;
               if (elementBelow && (elementBelow.tagName === 'A' || elementBelow.tagName === 'BUTTON' || elementBelow.closest('a') || elementBelow.closest('button'))) {
-                e.target.style.pointerEvents = 'none';
+                target.style.pointerEvents = 'none';
                 elementBelow.click();
                 setTimeout(() => {
-                  e.target.style.pointerEvents = 'auto';
+                  target.style.pointerEvents = 'auto';
                 }, 100);
               }
             }}
