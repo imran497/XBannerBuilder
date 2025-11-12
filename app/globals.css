@@ -6,39 +6,39 @@
 
 @layer base {
   :root {
-    /* Light mode - Clean and bright with blue accents */
-    --background: 213 27% 97%;
-    --foreground: 220 13% 18%;
+    /* Light mode - Modern and clean with improved contrast */
+    --background: 0 0% 98%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 220 13% 18%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 18%;
-    /* Primary - Twitter blue (rgb(29, 161, 242)) */
-    --primary: 203 89% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 220 13% 18%;
-    --muted: 214 32% 91%;
-    --muted-foreground: 220 13% 46%;
-    --accent: 203 89% 53%;
-    --accent-foreground: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    /* Primary - Modern blue */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 0 0% 96.5%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 0 0% 96.5%;
+    --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 82%;
-    --input: 214 32% 91%;
-    --ring: 203 89% 53%;
-    --radius: 0.5rem;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 90%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
     --button-outline: hsl(var(--border));
     --primary-border: hsl(var(--primary));
     --secondary-border: hsl(var(--border));
     --muted-border: hsl(var(--border));
     --accent-border: hsl(var(--accent));
     --destructive-border: hsl(var(--destructive));
-    --chart-1: 203 89% 53%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 221.2 83.2% 53.3%;
+    --chart-2: 212 95% 68%;
+    --chart-3: 216 92% 60%;
+    --chart-4: 210 98% 78%;
+    --chart-5: 212 97% 87%;
   }
 
   .dark {
@@ -158,8 +158,70 @@
   .bg-card {
     /* Removed box-shadow to prevent gray borders on dark banners */
   }
-  
+
   .bg-secondary {
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px 0 rgb(0 0 0 / 0.06);
+  }
+
+  .dark .bg-secondary {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  }
+
+  /* Grid colors with smooth theme transitions */
+  :root {
+    --grid-border-color: rgb(107 114 128 / 0.05);
+    --grid-hover-color: rgb(96 165 250 / 0.2);
+    --grid-hover-color-strong: rgb(96 165 250 / 0.3);
+  }
+
+  .dark {
+    --grid-border-color: rgb(156 163 175 / 0.05);
+    --grid-hover-color: rgb(147 197 253 / 0.2);
+    --grid-hover-color-strong: rgb(147 197 253 / 0.3);
+  }
+
+  .grid-square {
+    border: 1px solid var(--grid-border-color);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .grid-square:hover {
+    background-color: var(--grid-hover-color);
+  }
+
+  /* Enhanced form elements visibility */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  select,
+  textarea {
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--background));
+    transition: all 0.2s ease;
+  }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: hsl(var(--ring));
+    outline: none;
+    box-shadow: 0 0 0 1px hsl(var(--ring) / 0.2);
+  }
+
+  /* Button group borders */
+  button[role="combobox"],
+  [role="combobox"] {
+    border: 1px solid hsl(var(--border));
+  }
+
+  button[role="combobox"]:focus,
+  [role="combobox"]:focus {
+    border-color: hsl(var(--ring));
+    outline: none;
+    box-shadow: 0 0 0 1px hsl(var(--ring) / 0.2);
   }
 }

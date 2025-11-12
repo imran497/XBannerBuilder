@@ -7,13 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BadgeCheck, MapPin, Link, Calendar } from "lucide-react";
 import { FabricObject } from "fabric";
 
-interface TwitterProfilePreviewProps {
+interface XProfilePreviewProps {
   background: string;
   hideControls?: boolean;
   onSelectionChange?: (object: FabricObject | null) => void;
 }
 
-const TwitterProfilePreview = forwardRef<CanvasHandle, TwitterProfilePreviewProps>(
+const XProfilePreview = forwardRef<CanvasHandle, XProfilePreviewProps>(
   ({ background, hideControls = false, onSelectionChange }, ref) => {
     const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
     
@@ -96,7 +96,7 @@ const TwitterProfilePreview = forwardRef<CanvasHandle, TwitterProfilePreviewProp
 
     return (
       <div className="w-full flex flex-col items-center">
-        {/* Twitter Profile Preview Container */}
+        {/* X Profile Preview Container */}
         <div className="relative bg-black dark:bg-black w-full border border-border rounded-lg overflow-hidden" style={{ width: `${containerWidth}px` }}>
           {/* Banner Canvas - Raw banner without any styling */}
           <div className="relative" style={{ width: `${containerWidth}px`, height: `${containerHeight}px`, overflow: 'hidden' }}>
@@ -107,7 +107,7 @@ const TwitterProfilePreview = forwardRef<CanvasHandle, TwitterProfilePreviewProp
             />
           </div>
 
-          {/* Profile Information Section - Twitter style */}
+          {/* Profile Information Section - X style */}
           <div className="relative px-4 pt-3 pb-4 bg-white dark:bg-black">
             {/* Profile Picture - Overlays the banner - responsive size */}
             <div className="absolute -top-8 md:-top-10 left-3 md:left-4">
@@ -179,6 +179,6 @@ const TwitterProfilePreview = forwardRef<CanvasHandle, TwitterProfilePreviewProp
   }
 );
 
-TwitterProfilePreview.displayName = "TwitterProfilePreview";
+XProfilePreview.displayName = "XProfilePreview";
 
-export default TwitterProfilePreview;
+export default XProfilePreview;

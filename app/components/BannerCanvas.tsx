@@ -78,10 +78,12 @@ export interface TextProperties {
 
 export interface CanvasHandle {
   updateSelectedText: (props: Partial<TextProperties>) => void;
-  addText: (text: string) => void;
+  addText: (text: string, props?: Partial<TextProperties>) => void;
   addImage: (imageUrl: string) => void;
+  loadTemplate: (template: any) => Promise<void>;
   getCanvas: () => Canvas | null;
   setCanvasZoom: (zoom: number) => void;
+  clearCanvas: () => void;
 }
 
 interface BannerCanvasProps {
@@ -248,26 +250,39 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       fabricCanvasRef.current.setZoom(zoomLevel);
       fabricCanvasRef.current.renderAll();
     },
-    addText: async (text: string) => {
+    addText: async (text: string, props?: Partial<TextProperties>) => {
       if (!fabricCanvasRef.current) return;
       
       const canvas = fabricCanvasRef.current;
       const canvasWidth = canvas.width || 1500;
       const canvasHeight = canvas.height || 500;
       
-      // Ensure Inter font is loaded before creating text
-      try {
-        await loadFont("Inter");
-      } catch (error) {
-        console.warn("Failed to load Inter font for new text");
-      }
-      
-      const newText = new IText(text, {
+      // Default properties
+      const defaultProps = {
         left: 100,
         top: 200,
         fontFamily: "Inter",
         fontSize: 40,
         fill: "#1f2937",
+      };
+      
+      // Merge with provided props
+      const textProps = { ...defaultProps, ...props };
+      
+      // Ensure the font is loaded before creating text
+      try {
+        await loadFont(textProps.fontFamily);
+      } catch (error) {
+        console.warn(`Failed to load ${textProps.fontFamily} font for new text`);
+      }
+      
+      const newText = new IText(text, {
+        left: textProps.left,
+        top: textProps.top,
+        fontFamily: textProps.fontFamily,
+        fontSize: textProps.fontSize,
+        fontWeight: textProps.fontWeight || "400",
+        fill: textProps.fill,
         splitByGrapheme: true, // Better text wrapping
         width: canvasWidth - 200, // Set max width to prevent overflow
         breakWords: true, // Allow breaking long words
@@ -293,31 +308,145 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       if (!fabricCanvasRef.current) return;
       
       const canvas = fabricCanvasRef.current;
+      const canvasWidth = canvas.width || 1500;
+      const canvasHeight = canvas.height || 500;
       
       FabricImage.fromURL(imageUrl, {
         crossOrigin: 'anonymous'
       }).then((img) => {
-        const maxWidth = 300;
-        const maxHeight = 180;
-        const scale = Math.min(maxWidth / img.width!, maxHeight / img.height!, 1);
+        // Check if this looks like an avatar (square-ish and small)
+        const isAvatar = imageUrl.includes('dicebear') || imageUrl.includes('avatar');
+        
+        let targetSize, left, top;
+        
+        if (isAvatar) {
+          // Avatar sizing - make them a reasonable profile picture size
+          targetSize = 120; // Good size for profile pictures in banners
+          left = Math.random() * (canvasWidth - targetSize) + targetSize / 2;
+          top = Math.random() * (canvasHeight - targetSize) + targetSize / 2;
+        } else {
+          // Regular image sizing - larger for banner content
+          const maxWidth = Math.min(400, canvasWidth * 0.3);
+          const maxHeight = Math.min(250, canvasHeight * 0.5);
+          targetSize = Math.min(maxWidth, maxHeight);
+          left = canvasWidth * 0.7; // Place on the right side
+          top = canvasHeight * 0.3;  // Center vertically
+        }
+        
+        // Calculate scale to fit target size while maintaining aspect ratio
+        const imgSize = Math.max(img.width!, img.height!);
+        const scale = targetSize / imgSize;
         
         img.set({
-          left: 1000,
-          top: 150,
+          left: left,
+          top: top,
           scaleX: scale,
           scaleY: scale,
+          originX: 'center',
+          originY: 'center',
         });
+        
         canvas.add(img);
         canvas.setActiveObject(img);
         selectedObjectRef.current = img;
         setSelectedObject(img);
+        img.setCoords();
         canvas.renderAll();
         
         // Notify parent of the new selection
         onSelectionChangeRef.current?.(img);
       });
     },
+    loadTemplate: async (template: any) => {
+      const canvas = fabricCanvasRef.current;
+      if (!canvas) return;
+
+      try {
+        // Clear existing objects (except background)
+        const objects = canvas.getObjects();
+        const nonBackgroundObjects = objects.filter(obj => obj !== backgroundRectRef.current);
+        nonBackgroundObjects.forEach(obj => canvas.remove(obj));
+
+        // Load text objects with exact properties
+        for (const textObj of template.textObjects || []) {
+          try {
+            await loadFont(textObj.fontFamily);
+            
+            const text = new IText(textObj.text, {
+              left: textObj.left,
+              top: textObj.top,
+              fontFamily: textObj.fontFamily,
+              fontSize: textObj.fontSize,
+              fontWeight: textObj.fontWeight,
+              fill: textObj.fill,
+              textAlign: textObj.textAlign,
+              splitByGrapheme: true,
+              width: 1300, // Prevent overflow
+              breakWords: true,
+            });
+
+            canvas.add(text);
+          } catch (error) {
+            console.warn('Error loading text object:', error);
+          }
+        }
+
+        // Load image objects with exact properties
+        for (const imageObj of template.images || []) {
+          if (imageObj.url) {
+            try {
+              const img = await FabricImage.fromURL(imageObj.url, {
+                crossOrigin: 'anonymous'
+              });
+
+              img.set({
+                left: imageObj.left,
+                top: imageObj.top,
+                scaleX: imageObj.scaleX,
+                scaleY: imageObj.scaleY,
+                originX: 'center',
+                originY: 'center',
+              });
+
+              canvas.add(img);
+              img.setCoords();
+            } catch (error) {
+              console.warn('Error loading image:', error);
+            }
+          }
+        }
+
+        // Clear selection and render
+        canvas.discardActiveObject();
+        setSelectedObject(null);
+        selectedObjectRef.current = null;
+        onSelectionChangeRef.current?.(null);
+        canvas.renderAll();
+
+      } catch (error) {
+        console.error('Error loading template:', error);
+      }
+    },
     getCanvas: () => fabricCanvasRef.current,
+    clearCanvas: () => {
+      if (!fabricCanvasRef.current) return;
+      
+      // Remove all objects except the background
+      const objects = fabricCanvasRef.current.getObjects();
+      const nonBackgroundObjects = objects.filter(obj => obj !== backgroundRectRef.current);
+      
+      nonBackgroundObjects.forEach(obj => {
+        fabricCanvasRef.current?.remove(obj);
+      });
+      
+      // Clear selection
+      fabricCanvasRef.current.discardActiveObject();
+      fabricCanvasRef.current.renderAll();
+      
+      // Notify parent
+      setSelectedObject(null);
+      onSelectionChangeRef.current?.(null);
+    },
   }));
 
   useEffect(() => {

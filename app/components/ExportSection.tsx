@@ -29,7 +29,7 @@ export default function ExportSection({ onExport }: ExportSectionProps) {
           </Button>
 
           <p className="text-xs text-muted-foreground">
-            Exported as high-quality JPEG at full resolution (1500×500) for maximum clarity on Twitter/X.
+            Exported as high-quality JPEG at full resolution (1500×500) for maximum clarity on X.
           </p>
         </AccordionContent>
       </AccordionItem>

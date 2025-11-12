@@ -10,8 +10,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Twitter Banner Generator',
-  description: 'Design your perfect Twitter banner',
+  title: 'X Banner Generator',
+  description: 'Design your perfect X (Twitter) banner',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
@@ -26,10 +26,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Script
-          src="https://scripts.simpleanalyticscdn.com/latest.js"
-          strategy="afterInteractive"
-        />
+        {process.env.NODE_ENV === 'production' && (
+          <Script
+            src="https://scripts.simpleanalyticscdn.com/latest.js"
+            strategy="afterInteractive"
+          />
+        )}
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
         </ThemeProvider>
