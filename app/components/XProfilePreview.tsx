@@ -11,10 +11,11 @@ interface XProfilePreviewProps {
   background: string;
   hideControls?: boolean;
   onSelectionChange?: (object: FabricObject | null) => void;
+  theme?: 'light' | 'dark';
 }
 
 const XProfilePreview = forwardRef<CanvasHandle, XProfilePreviewProps>(
-  ({ background, hideControls = false, onSelectionChange }, ref) => {
+  ({ background, hideControls = false, onSelectionChange, theme = 'light' }, ref) => {
     const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
     
     // Static profile data for preview
@@ -94,10 +95,19 @@ const XProfilePreview = forwardRef<CanvasHandle, XProfilePreviewProps>(
       }
     }, [canvasZoom, ref]);
 
+    const isDark = theme === 'dark';
+    const bgColor = isDark ? 'bg-black' : 'bg-white';
+    const textColor = isDark ? 'text-white' : 'text-black';
+    const mutedTextColor = isDark ? 'text-gray-400' : 'text-gray-500';
+    const borderColor = isDark ? 'border-black' : 'border-white';
+    const buttonBg = isDark ? 'bg-white' : 'bg-black';
+    const buttonText = isDark ? 'text-black' : 'text-white';
+    const buttonHover = isDark ? 'hover:bg-gray-200' : 'hover:bg-gray-800';
+
     return (
       <div className="w-full flex flex-col items-center">
         {/* X Profile Preview Container */}
-        <div className="relative bg-black dark:bg-black w-full border border-border rounded-lg overflow-hidden" style={{ width: `${containerWidth}px` }}>
+        <div className={`relative ${bgColor} w-full border border-border rounded-lg overflow-hidden`} style={{ width: `${containerWidth}px` }}>
           {/* Banner Canvas - Raw banner without any styling */}
           <div className="relative" style={{ width: `${containerWidth}px`, height: `${containerHeight}px`, overflow: 'hidden' }}>
             <BannerCanvas
@@ -108,10 +118,10 @@ const XProfilePreview = forwardRef<CanvasHandle, XProfilePreviewProps>(
           </div>
 
           {/* Profile Information Section - X style */}
-          <div className="relative px-4 pt-3 pb-4 bg-white dark:bg-black">
+          <div className={`relative px-4 pt-3 pb-4 ${bgColor}`}>
             {/* Profile Picture - Overlays the banner - responsive size */}
             <div className="absolute -top-8 md:-top-10 left-3 md:left-4">
-              <Avatar className={`${windowSize.width < 768 ? 'w-16 h-16' : 'w-[120px] h-[120px]'} border-4 border-white dark:border-black`}>
+              <Avatar className={`${windowSize.width < 768 ? 'w-16 h-16' : 'w-[120px] h-[120px]'} border-4 ${borderColor}`}>
                 <AvatarImage src={profileData.avatarUrl} />
                 <AvatarFallback className={`${windowSize.width < 768 ? 'text-lg' : 'text-2xl'} font-bold bg-muted text-muted-foreground`}>
                   {profileData.name.charAt(0)}
@@ -121,7 +131,7 @@ const XProfilePreview = forwardRef<CanvasHandle, XProfilePreviewProps>(
 
             {/* Follow Button */}
             <div className={`flex justify-end ${windowSize.width < 768 ? 'mb-8' : 'mb-12'}`}>
-              <Button className="rounded-full font-bold text-xs md:text-sm bg-black text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 px-4 cursor-pointer" data-testid="button-follow-preview">
+              <Button className={`rounded-full font-bold text-xs md:text-sm ${buttonBg} ${buttonText} ${buttonHover} px-4 cursor-pointer`} data-testid="button-follow-preview">
                 Follow
               </Button>
             </div>
@@ -129,17 +139,17 @@ const XProfilePreview = forwardRef<CanvasHandle, XProfilePreviewProps>(
             {/* Name and Username */}
             <div className="space-y-0.5 mb-2 md:mb-3">
               <div className="flex items-center gap-1">
-                <h2 className={`${windowSize.width < 768 ? 'text-base' : 'text-xl'} font-bold text-black dark:text-white`}>{profileData.name}</h2>
+                <h2 className={`${windowSize.width < 768 ? 'text-base' : 'text-xl'} font-bold ${textColor}`}>{profileData.name}</h2>
                 <BadgeCheck className={`${windowSize.width < 768 ? 'w-4 h-4' : 'w-5 h-5'} text-primary fill-current`} />
               </div>
-              <p className={`${windowSize.width < 768 ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400`}>{profileData.username}</p>
+              <p className={`${windowSize.width < 768 ? 'text-xs' : 'text-sm'} ${mutedTextColor}`}>{profileData.username}</p>
             </div>
 
             {/* Bio */}
-            <p className={`${windowSize.width < 768 ? 'text-xs' : 'text-sm'} mb-2 md:mb-3 text-black dark:text-white`}>{profileData.bio}</p>
+            <p className={`${windowSize.width < 768 ? 'text-xs' : 'text-sm'} mb-2 md:mb-3 ${textColor}`}>{profileData.bio}</p>
 
             {/* Location, Website, Join Date */}
-            <div className={`flex flex-wrap items-center gap-3 mb-2 md:mb-3 ${windowSize.width < 768 ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400`}>
+            <div className={`flex flex-wrap items-center gap-3 mb-2 md:mb-3 ${windowSize.width < 768 ? 'text-xs' : 'text-sm'} ${mutedTextColor}`}>
               <div className="flex items-center gap-1">
                 <MapPin className="w-4 h-4" />
                 <span>Remote</span>
@@ -157,12 +167,12 @@ const XProfilePreview = forwardRef<CanvasHandle, XProfilePreviewProps>(
             {/* Stats */}
             <div className={`flex gap-3 md:gap-4 ${windowSize.width < 768 ? 'text-xs' : 'text-sm'}`}>
               <div>
-                <span className="font-bold text-black dark:text-white">{profileData.following}</span>
-                <span className="text-gray-500 dark:text-gray-400 ml-1">Following</span>
+                <span className={`font-bold ${textColor}`}>{profileData.following}</span>
+                <span className={`${mutedTextColor} ml-1`}>Following</span>
               </div>
               <div>
-                <span className="font-bold text-black dark:text-white">{profileData.followers}</span>
-                <span className="text-gray-500 dark:text-gray-400 ml-1">Followers</span>
+                <span className={`font-bold ${textColor}`}>{profileData.followers}</span>
+                <span className={`${mutedTextColor} ml-1`}>Followers</span>
               </div>
             </div>
           </div>

@@ -1,5 +1,154 @@
-import LandingPage from "./components/LandingPage";
+'use client'
+
+import { useState, useRef } from "react";
+import { Galdeano } from 'next/font/google';
+import BackgroundSection from "./components/BackgroundSection";
+import TextSection from "./components/TextSection";
+import ImageSection from "./components/ImageSection";
+import GitHubSection from "./components/GitHubSection";
+import ExportSection from "./components/ExportSection";
+import XProfilePreview from "./components/XProfilePreview";
+import { LogoWithText } from "./components/Logo";
+import { PreviewThemeSwitch } from "./components/PreviewThemeSwitch";
+import { CanvasHandle, TextProperties } from "./components/BannerCanvas";
+import { FabricObject, IText } from "fabric";
+
+const galdeano = Galdeano({
+  weight: '400',
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 export default function Home() {
-  return <LandingPage />;
+  const [background, setBackground] = useState("linear-gradient(135deg, #ffde4f 0%, #ffffff 100%)");
+  const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
+  const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>('light');
+  const canvasRef = useRef<CanvasHandle>(null);
+
+  const handleSelectionChange = (object: FabricObject | null) => {
+    setSelectedObject(object);
+  };
+
+  const updateTextProperties = (props: Partial<TextProperties>) => {
+    canvasRef.current?.updateSelectedText(props);
+  };
+
+  const getSelectedTextProperties = (): TextProperties | null => {
+    if (!selectedObject || selectedObject.type !== 'i-text') return null;
+
+    const textObject = selectedObject as IText;
+    return {
+      text: textObject.text || "",
+      fontFamily: textObject.fontFamily || "Inter",
+      fontSize: textObject.fontSize || 40,
+      fontWeight: String(textObject.fontWeight || "400"),
+      fill: String(textObject.fill || "#000000"),
+      textAlign: textObject.textAlign || "left",
+      left: textObject.left || 0,
+      top: textObject.top || 0,
+    };
+  };
+
+  const handleAddImage = (imageUrl: string) => {
+    canvasRef.current?.addImage(imageUrl);
+  };
+
+  const handleAddText = () => {
+    canvasRef.current?.addText("New Text");
+  };
+
+  const handleExport = () => {
+    const canvas = canvasRef.current?.getCanvas();
+    if (!canvas) return;
+
+    // Export at full resolution for best quality
+    const dataURL = canvas.toDataURL({
+      format: 'jpeg',
+      quality: 0.95, // High quality JPEG (95%)
+      multiplier: 1, // Full 1500x500 resolution
+      enableRetinaScaling: false, // Prevent double scaling
+    });
+
+    const link = document.createElement("a");
+    link.download = "x-banner.jpg";
+    link.href = dataURL;
+    link.click();
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div>
+        <div className="max-w-[1200px] mx-auto px-6 py-4">
+          <LogoWithText size={40} />
+        </div>
+      </div>
+
+      {/* Hero Section */}
+      <div className="bg-gradient-to-b from-background to-muted/20">
+        <div className="max-w-[1200px] mx-auto px-6 py-16 text-center">
+          <h1 className={`${galdeano.className} text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-foreground`}>
+            Make Stunning{' '}
+            <span
+              className="inline-block px-4 py-1 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: "url('/assets/images/pink_bg.svg')",
+              }}
+            >
+              X Headers
+            </span>
+            <br />in Seconds
+          </h1>
+          <p className="max-w-2xl mx-auto" style={{ fontSize: '.9rem', color: '#545454', fontWeight: 200 }}>
+            Design professional X banners with beautiful gradients, perfect typography, and real-time preview. No design skills required – just point, click, and create.
+          </p>
+        </div>
+      </div>
+
+      {/* Main Content - Responsive Layout */}
+      <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row">
+        {/* Preview Section - First on mobile/tablet, right on desktop */}
+        <div className="w-full lg:w-[650px] p-6 order-1 lg:order-2">
+          <div className="lg:sticky lg:top-6 w-full space-y-4">
+            <div className="flex justify-end">
+              <PreviewThemeSwitch
+                theme={previewTheme}
+                onThemeChange={setPreviewTheme}
+              />
+            </div>
+            <XProfilePreview
+              ref={canvasRef}
+              background={background}
+              hideControls={false}
+              onSelectionChange={handleSelectionChange}
+              theme={previewTheme}
+            />
+          </div>
+        </div>
+
+        {/* Editing Options - Second on mobile/tablet, left on desktop */}
+        <div className="w-full lg:flex-1 order-2 lg:order-1">
+          <div className="p-6 space-y-6 pb-12">
+          <BackgroundSection onBackgroundChange={setBackground} />
+
+          <TextSection
+            selectedTextProperties={getSelectedTextProperties()}
+            onTextPropertiesChange={updateTextProperties}
+            onAddText={handleAddText}
+          />
+
+          <ImageSection
+            onAddImage={handleAddImage}
+          />
+
+          <GitHubSection />
+
+          <ExportSection
+            onExport={handleExport}
+          />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

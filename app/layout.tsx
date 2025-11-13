@@ -4,14 +4,14 @@ import { ThemeProvider } from 'next-themes'
 import Script from 'next/script'
 import './globals.css'
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700', '900']
 })
 
 export const metadata: Metadata = {
-  title: 'X Banner Generator',
-  description: 'Design your perfect X (Twitter) banner',
+  title: 'xheader.app - X Banner Generator',
+  description: 'Design your perfect X (Twitter) banner with xheader.app',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',

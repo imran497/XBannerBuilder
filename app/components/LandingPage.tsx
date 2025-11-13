@@ -253,7 +253,7 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <LogoWithText size={32} />
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <span>© {new Date().getFullYear()} XBanner Builder</span>
+              <span>© {new Date().getFullYear()} xheader.app</span>
               <span>•</span>
               <span>Made with ❤️ for creators</span>
             </div>
