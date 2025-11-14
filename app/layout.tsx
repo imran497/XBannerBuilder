@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   title: 'simpleXheader - X header generator',
   description: 'Design your perfect X (Twitter) banner with xheader.app',
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
+    icon: '/x_of_logo.png',
+    shortcut: '/x_of_logo.png',
   },
 }
 
