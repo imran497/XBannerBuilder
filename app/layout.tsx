@@ -10,7 +10,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'xheader.app - X Banner Generator',
+  title: 'simpleXheader - X header generator',
   description: 'Design your perfect X (Twitter) banner with xheader.app',
   icons: {
     icon: '/favicon.svg',

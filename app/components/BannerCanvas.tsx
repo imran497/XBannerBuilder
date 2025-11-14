@@ -263,7 +263,7 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
         top: 200,
         fontFamily: "Inter",
         fontSize: 40,
-        fill: "#1f2937",
+        fill: "#ffffff",
       };
       
       // Merge with provided props
@@ -506,7 +506,7 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
         fontFamily: "Barrio",
         fontSize: 60,
         fontWeight: "bold",
-        fill: "#1f2937",
+        fill: "#ffffff",
         splitByGrapheme: true, // Better text wrapping
         width: 1300, // Set max width to prevent overflow (1500 - 200 padding)
         breakWords: true, // Allow breaking long words

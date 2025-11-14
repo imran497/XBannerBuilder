@@ -20,7 +20,7 @@ const galdeano = Galdeano({
 });
 
 export default function Home() {
-  const [background, setBackground] = useState("linear-gradient(135deg, #ffde4f 0%, #ffffff 100%)");
+  const [background, setBackground] = useState("linear-gradient(135deg, #f093fb 0%, #f5576c 100%)");
   const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
   const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>('light');
   const canvasRef = useRef<CanvasHandle>(null);
@@ -87,7 +87,7 @@ export default function Home() {
       {/* Hero Section */}
       <div className="bg-gradient-to-b from-background to-muted/20">
         <div className="max-w-[1200px] mx-auto px-6 py-16 text-center">
-          <h1 className={`${galdeano.className} text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-foreground`}>
+          <h1 className={`${galdeano.className} text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-foreground`}>
             Make Stunning{' '}
             <span
               className="inline-block px-4 py-1 bg-cover bg-center bg-no-repeat"
@@ -105,30 +105,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main Content - Responsive Layout */}
-      <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row">
-        {/* Preview Section - First on mobile/tablet, right on desktop */}
-        <div className="w-full lg:w-[650px] p-6 order-1 lg:order-2">
-          <div className="lg:sticky lg:top-6 w-full space-y-4">
-            <div className="flex justify-end">
-              <PreviewThemeSwitch
-                theme={previewTheme}
-                onThemeChange={setPreviewTheme}
-              />
-            </div>
-            <XProfilePreview
-              ref={canvasRef}
-              background={background}
-              hideControls={false}
-              onSelectionChange={handleSelectionChange}
-              theme={previewTheme}
-            />
-          </div>
-        </div>
-
-        {/* Editing Options - Second on mobile/tablet, left on desktop */}
-        <div className="w-full lg:flex-1 order-2 lg:order-1">
-          <div className="p-6 space-y-6 pb-12">
+      {/* Main Content - Grid Layout for sticky support */}
+      <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_650px] gap-6 px-6">
+        {/* Editing Options - Left column on desktop, second on mobile */}
+        <div className="order-2 lg:order-1 py-6 space-y-6 pb-12">
           <BackgroundSection onBackgroundChange={setBackground} />
 
           <TextSection
@@ -146,6 +126,26 @@ export default function Home() {
           <ExportSection
             onExport={handleExport}
           />
+        </div>
+
+        {/* Preview Section - Right column on desktop, first on mobile, sticky */}
+        <div className="order-1 lg:order-2 py-6 lg:py-6">
+          <div className="sticky top-6">
+            <div className="absolute -top-10 right-0 lg:right-auto lg:left-full lg:ml-4 z-10">
+              <PreviewThemeSwitch
+                theme={previewTheme}
+                onThemeChange={setPreviewTheme}
+              />
+            </div>
+            <div className="flex justify-center">
+              <XProfilePreview
+                ref={canvasRef}
+                background={background}
+                hideControls={false}
+                onSelectionChange={handleSelectionChange}
+                theme={previewTheme}
+              />
+            </div>
           </div>
         </div>
       </div>
