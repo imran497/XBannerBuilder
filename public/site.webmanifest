@@ -1,0 +1,16 @@
+{
+  "name": "simpleXheader - X header generator",
+  "short_name": "simpleXheader",
+  "description": "Create stunning X (Twitter) banners in seconds",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f093fb",
+  "icons": [
+    {
+      "src": "/x_of_logo.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}
