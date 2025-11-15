@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     siteName: 'simpleXheader',
     images: [
       {
-        url: '/og-image.png',
+        url: '/app.png',
         width: 1200,
         height: 630,
         alt: 'simpleXheader - X header generator',
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     title: 'simpleXheader - X header generator',
     description: 'Create stunning X (Twitter) banners in seconds. Free online tool with beautiful gradients and real-time preview.',
     creator: '@imran0shaik',
-    images: ['/og-image.png'],
+    images: ['/app.png'],
   },
   robots: {
     index: true,

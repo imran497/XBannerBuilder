@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
-import { Canvas, IText, FabricObject, Rect, Gradient, FabricImage } from "fabric";
+import { Canvas, IText, FabricObject, Rect, Gradient, FabricImage, Group, Text } from "fabric";
 
 // Font loading utility
 const loadFont = (fontFamily: string): Promise<void> => {
@@ -78,12 +78,10 @@ export interface TextProperties {
 
 export interface CanvasHandle {
   updateSelectedText: (props: Partial<TextProperties>) => void;
-  addText: (text: string, props?: Partial<TextProperties>) => void;
+  addText: (text: string) => void;
   addImage: (imageUrl: string) => void;
-  loadTemplate: (template: any) => Promise<void>;
   getCanvas: () => Canvas | null;
   setCanvasZoom: (zoom: number) => void;
-  clearCanvas: () => void;
 }
 
 interface BannerCanvasProps {
@@ -97,6 +95,7 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<Canvas | null>(null);
   const backgroundRectRef = useRef<Rect | null>(null);
+  const watermarkRef = useRef<Group | null>(null);
   const selectedObjectRef = useRef<FabricObject | null>(null);
   const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
   const onSelectionChangeRef = useRef(onSelectionChange);
@@ -250,39 +249,26 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       fabricCanvasRef.current.setZoom(zoomLevel);
       fabricCanvasRef.current.renderAll();
     },
-    addText: async (text: string, props?: Partial<TextProperties>) => {
+    addText: async (text: string) => {
       if (!fabricCanvasRef.current) return;
       
       const canvas = fabricCanvasRef.current;
       const canvasWidth = canvas.width || 1500;
       const canvasHeight = canvas.height || 500;
       
-      // Default properties
-      const defaultProps = {
+      // Ensure Inter font is loaded before creating text
+      try {
+        await loadFont("Inter");
+      } catch (error) {
+        console.warn("Failed to load Inter font for new text");
+      }
+      
+      const newText = new IText(text, {
         left: 100,
         top: 200,
         fontFamily: "Inter",
         fontSize: 40,
-        fill: "#ffffff",
-      };
-      
-      // Merge with provided props
-      const textProps = { ...defaultProps, ...props };
-      
-      // Ensure the font is loaded before creating text
-      try {
-        await loadFont(textProps.fontFamily);
-      } catch (error) {
-        console.warn(`Failed to load ${textProps.fontFamily} font for new text`);
-      }
-      
-      const newText = new IText(text, {
-        left: textProps.left,
-        top: textProps.top,
-        fontFamily: textProps.fontFamily,
-        fontSize: textProps.fontSize,
-        fontWeight: textProps.fontWeight || "400",
-        fill: textProps.fill,
+        fill: "#1f2937",
         splitByGrapheme: true, // Better text wrapping
         width: canvasWidth - 200, // Set max width to prevent overflow
         breakWords: true, // Allow breaking long words
@@ -293,14 +279,19 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       canvas.setActiveObject(newText);
       selectedObjectRef.current = newText;
       setSelectedObject(newText);
-      
+
+      // Keep watermark on top
+      if (watermarkRef.current) {
+        canvas.bringObjectToFront(watermarkRef.current);
+      }
+
       // Force proper rendering after font is loaded
       setTimeout(() => {
         newText.initDimensions();
         newText.setCoords();
         canvas.requestRenderAll();
       }, 100);
-      
+
       // Notify parent of the new selection
       onSelectionChangeRef.current?.(newText);
     },
@@ -308,145 +299,37 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
       if (!fabricCanvasRef.current) return;
       
       const canvas = fabricCanvasRef.current;
-      const canvasWidth = canvas.width || 1500;
-      const canvasHeight = canvas.height || 500;
       
       FabricImage.fromURL(imageUrl, {
         crossOrigin: 'anonymous'
       }).then((img) => {
-        // Check if this looks like an avatar (square-ish and small)
-        const isAvatar = imageUrl.includes('dicebear') || imageUrl.includes('avatar');
-        
-        let targetSize, left, top;
-        
-        if (isAvatar) {
-          // Avatar sizing - make them a reasonable profile picture size
-          targetSize = 120; // Good size for profile pictures in banners
-          left = Math.random() * (canvasWidth - targetSize) + targetSize / 2;
-          top = Math.random() * (canvasHeight - targetSize) + targetSize / 2;
-        } else {
-          // Regular image sizing - larger for banner content
-          const maxWidth = Math.min(400, canvasWidth * 0.3);
-          const maxHeight = Math.min(250, canvasHeight * 0.5);
-          targetSize = Math.min(maxWidth, maxHeight);
-          left = canvasWidth * 0.7; // Place on the right side
-          top = canvasHeight * 0.3;  // Center vertically
-        }
-        
-        // Calculate scale to fit target size while maintaining aspect ratio
-        const imgSize = Math.max(img.width!, img.height!);
-        const scale = targetSize / imgSize;
+        const maxWidth = 300;
+        const maxHeight = 180;
+        const scale = Math.min(maxWidth / img.width!, maxHeight / img.height!, 1);
         
         img.set({
-          left: left,
-          top: top,
+          left: 1000,
+          top: 150,
           scaleX: scale,
           scaleY: scale,
-          originX: 'center',
-          originY: 'center',
         });
-        
         canvas.add(img);
         canvas.setActiveObject(img);
         selectedObjectRef.current = img;
         setSelectedObject(img);
-        img.setCoords();
+
+        // Keep watermark on top
+        if (watermarkRef.current) {
+          canvas.bringObjectToFront(watermarkRef.current);
+        }
+
         canvas.renderAll();
-        
+
         // Notify parent of the new selection
         onSelectionChangeRef.current?.(img);
       });
     },
-    loadTemplate: async (template: any) => {
-      const canvas = fabricCanvasRef.current;
-      if (!canvas) return;
-
-      try {
-        // Clear existing objects (except background)
-        const objects = canvas.getObjects();
-        const nonBackgroundObjects = objects.filter(obj => obj !== backgroundRectRef.current);
-        nonBackgroundObjects.forEach(obj => canvas.remove(obj));
-
-        // Load text objects with exact properties
-        for (const textObj of template.textObjects || []) {
-          try {
-            await loadFont(textObj.fontFamily);
-            
-            const text = new IText(textObj.text, {
-              left: textObj.left,
-              top: textObj.top,
-              fontFamily: textObj.fontFamily,
-              fontSize: textObj.fontSize,
-              fontWeight: textObj.fontWeight,
-              fill: textObj.fill,
-              textAlign: textObj.textAlign,
-              splitByGrapheme: true,
-              width: 1300, // Prevent overflow
-              breakWords: true,
-            });
-
-            canvas.add(text);
-          } catch (error) {
-            console.warn('Error loading text object:', error);
-          }
-        }
-
-        // Load image objects with exact properties
-        for (const imageObj of template.images || []) {
-          if (imageObj.url) {
-            try {
-              const img = await FabricImage.fromURL(imageObj.url, {
-                crossOrigin: 'anonymous'
-              });
-
-              img.set({
-                left: imageObj.left,
-                top: imageObj.top,
-                scaleX: imageObj.scaleX,
-                scaleY: imageObj.scaleY,
-                originX: 'center',
-                originY: 'center',
-              });
-
-              canvas.add(img);
-              img.setCoords();
-            } catch (error) {
-              console.warn('Error loading image:', error);
-            }
-          }
-        }
-
-        // Clear selection and render
-        canvas.discardActiveObject();
-        setSelectedObject(null);
-        selectedObjectRef.current = null;
-        onSelectionChangeRef.current?.(null);
-        canvas.renderAll();
-
-      } catch (error) {
-        console.error('Error loading template:', error);
-      }
-    },
     getCanvas: () => fabricCanvasRef.current,
-    clearCanvas: () => {
-      if (!fabricCanvasRef.current) return;
-      
-      // Remove all objects except the background
-      const objects = fabricCanvasRef.current.getObjects();
-      const nonBackgroundObjects = objects.filter(obj => obj !== backgroundRectRef.current);
-      
-      nonBackgroundObjects.forEach(obj => {
-        fabricCanvasRef.current?.remove(obj);
-      });
-      
-      // Clear selection
-      fabricCanvasRef.current.discardActiveObject();
-      fabricCanvasRef.current.renderAll();
-      
-      // Notify parent
-      setSelectedObject(null);
-      onSelectionChangeRef.current?.(null);
-    },
   }));
 
   useEffect(() => {
@@ -481,7 +364,79 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
     });
     canvas.add(bgRect);
     backgroundRectRef.current = bgRect;
-    
+
+    // Create watermark
+    const createWatermark = () => {
+      FabricImage.fromURL('/simpleXheader_dark.svg', {
+        crossOrigin: 'anonymous'
+      }).then((logo) => {
+        // Create "generated by" text with 50% opacity
+        const watermarkText = new Text("generated by", {
+          fontSize: 24,
+          fill: 'rgba(255, 255, 255, 0.5)',
+          fontFamily: 'monospace',
+          fontWeight: '400',
+        });
+
+        // Scale logo to 32px height
+        const logoScale = 32 / logo.height!;
+        logo.set({
+          scaleX: logoScale,
+          scaleY: logoScale,
+        });
+
+        // Calculate dimensions
+        const textWidth = watermarkText.width || 0;
+        const logoWidth = (logo.width || 0) * logoScale;
+        const spacing = 8;
+        const totalWidth = textWidth + spacing + logoWidth;
+        const totalHeight = Math.max(watermarkText.height || 0, 32);
+
+        // Create background rectangle with 15% opacity
+        const bgPadding = 12;
+        const watermarkBg = new Rect({
+          width: totalWidth + (bgPadding * 2),
+          height: totalHeight + (bgPadding * 2),
+          fill: 'rgba(0, 0, 0, 0.15)',
+          rx: 8,
+          ry: 8,
+        });
+
+        // Position elements relative to group
+        watermarkBg.set({
+          left: 0,
+          top: 0,
+        });
+
+        watermarkText.set({
+          left: bgPadding,
+          top: bgPadding + (32 - (watermarkText.height || 0)) / 2,
+        });
+
+        logo.set({
+          left: bgPadding + textWidth + spacing,
+          top: bgPadding,
+        });
+
+        // Create group
+        const watermarkGroup = new Group([watermarkBg, watermarkText, logo], {
+          left: 1500 - (totalWidth + bgPadding * 2), // Right align
+          top: 500 - (totalHeight + bgPadding * 2), // Bottom align
+          selectable: false,
+          evented: false,
+          hoverCursor: 'default',
+        });
+
+        canvas.add(watermarkGroup);
+        watermarkRef.current = watermarkGroup;
+
+        // Bring watermark to front
+        canvas.bringObjectToFront(watermarkGroup);
+        canvas.renderAll();
+      });
+    };
+
+    createWatermark();
 
     // Clear selection when clicking on background (empty area)
     canvas.on('mouse:down', (e) => {
@@ -500,8 +455,8 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
         console.warn("Failed to load Barrio font for sample text");
       }
       
-      const text = new IText("I am #IndieDev", {
-        left: 750, // Center position (1500 / 2)
+      const text = new IText("Just do it", {
+        left: 1350, // Right side position
         top: 250, // Center position (500 / 2)
         fontFamily: "Barrio",
         fontSize: 60,
@@ -510,17 +465,28 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
         splitByGrapheme: true, // Better text wrapping
         width: 1300, // Set max width to prevent overflow (1500 - 200 padding)
         breakWords: true, // Allow breaking long words
-        textAlign: "center",
-        originX: "center", // Center horizontally
+        textAlign: "right",
+        originX: "right", // Align from right
         originY: "center", // Center vertically
       });
       canvas.add(text);
-      
+
+      // Keep watermark on top
+      if (watermarkRef.current) {
+        canvas.bringObjectToFront(watermarkRef.current);
+      }
+
       // Set initial selection to the sample text
       setTimeout(() => {
         text.initDimensions();
         text.setCoords();
         canvas.setActiveObject(text);
+
+        // Ensure watermark stays on top
+        if (watermarkRef.current) {
+          canvas.bringObjectToFront(watermarkRef.current);
+        }
+
         canvas.renderAll();
         selectedObjectRef.current = text;
         setSelectedObject(text);
@@ -529,6 +495,34 @@ const BannerCanvas = forwardRef<CanvasHandle, BannerCanvasProps>(
     };
     
     initializeSampleText();
+
+    // Add default boxing image
+    const initializeDefaultImage = () => {
+      FabricImage.fromURL('/assets/images/boxing.png', {
+        crossOrigin: 'anonymous'
+      }).then((img) => {
+        const maxSize = 450; // 1.5x the original 300px
+        const scale = Math.min(maxSize / img.width!, maxSize / img.height!, 1);
+
+        img.set({
+          left: 250, // Moved more left
+          top: -50, // Moved more up
+          scaleX: scale,
+          scaleY: scale,
+        });
+
+        canvas.add(img);
+
+        // Keep watermark on top
+        if (watermarkRef.current) {
+          canvas.bringObjectToFront(watermarkRef.current);
+        }
+
+        canvas.renderAll();
+      });
+    };
+
+    initializeDefaultImage();
 
     // Selection event handlers
     canvas.on("selection:created", (e) => {

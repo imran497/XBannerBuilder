@@ -13,11 +13,8 @@ import { TextProperties } from "./BannerCanvas";
 
 const GOOGLE_FONTS = [
   "Inter",
-  "Roboto",
   "Montserrat",
-  "Barrio",
-  "Pirata One",
-  "Rye"
+  "Barrio"
 ];
 
 const FONT_WEIGHTS = [
@@ -28,6 +25,13 @@ const FONT_WEIGHTS = [
   { label: "Bold", value: "700" },
   { label: "Black", value: "900" }
 ];
+
+// Define which weights are available for each font
+const FONT_WEIGHT_AVAILABILITY: Record<string, string[]> = {
+  "Inter": ["300", "400", "500", "600", "700", "900"],
+  "Montserrat": ["300", "400", "500", "600", "700", "900"],
+  "Barrio": ["400"] // Display font with only regular weight
+};
 
 interface TextSectionProps {
   selectedTextProperties: TextProperties | null;
@@ -153,22 +157,27 @@ export default function TextSection({ selectedTextProperties, onTextPropertiesCh
           <div>
             <Label className="text-sm font-medium mb-2 block text-foreground">Font Weight</Label>
             <div className="grid grid-cols-3 gap-2">
-              {FONT_WEIGHTS.map(weight => (
-                <Button
-                  key={weight.value}
-                  variant="outline"
-                  size="sm"
-                  data-testid={`button-weight-${weight.value}`}
-                  className={`toggle-elevate text-foreground ${fontWeight === weight.value ? 'toggle-elevated bg-muted' : ''}`}
-                  onClick={() => {
-                    setFontWeight(weight.value);
-                    updateTextProperties({ fontWeight: weight.value });
-                  }}
-                  disabled={!isTextSelected}
-                >
-                  {weight.label}
-                </Button>
-              ))}
+              {FONT_WEIGHTS.map(weight => {
+                const availableWeights = FONT_WEIGHT_AVAILABILITY[fontFamily] || ["400"];
+                const isWeightAvailable = availableWeights.includes(weight.value);
+
+                return (
+                  <Button
+                    key={weight.value}
+                    variant="outline"
+                    size="sm"
+                    data-testid={`button-weight-${weight.value}`}
+                    className={`toggle-elevate text-foreground ${fontWeight === weight.value ? 'toggle-elevated bg-muted' : ''}`}
+                    onClick={() => {
+                      setFontWeight(weight.value);
+                      updateTextProperties({ fontWeight: weight.value });
+                    }}
+                    disabled={!isTextSelected || !isWeightAvailable}
+                  >
+                    {weight.label}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 
